@@ -26,7 +26,7 @@ import Dispatch
 	import Glibc
 #endif
 
-@testable import Socket
+import Socket
 
 class SocketTests: XCTestCase {
 	
