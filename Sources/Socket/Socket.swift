@@ -820,7 +820,7 @@ public class Socket: SocketReader, SocketWriter {
 	///
 	/// Internal Storage Buffer initially created with `Socket.SOCKET_DEFAULT_READ_BUFFER_SIZE`.
 	///
-	var readStorage: NSMutableData = NSMutableData(capacity: Socket.SOCKET_DEFAULT_READ_BUFFER_SIZE)!
+	var readStorage = Data(capacity: Socket.SOCKET_DEFAULT_READ_BUFFER_SIZE)
 	
 	///
 	/// `True` if a delegate accept is pending.
@@ -2487,47 +2487,6 @@ public class Socket: SocketReader, SocketWriter {
 	///
 	///	- Returns:				Tuple containing the number of bytes read and the `Address` of the client who sent the data.
 	///
-	public func listen(forMessage data: NSMutableData, on port: Int, maxBacklogSize: Int = Socket.SOCKET_DEFAULT_MAX_BACKLOG) throws -> (bytesRead: Int, address: Address?) {
-
-		// The socket must've been created...
-		if self.socketfd == Socket.SOCKET_INVALID_DESCRIPTOR {
-
-			throw Error(code: Socket.SOCKET_ERR_BAD_DESCRIPTOR, reason: "Socket has an invalid descriptor")
-		}
-
-		// The socket must've been created for UDP...
-		guard let sig = self.signature,
-			sig.socketType == .datagram && sig.proto == .udp else {
-
-				throw Error(code: Socket.SOCKET_ERR_WRONG_PROTOCOL, reason: "This is not a UDP socket.")
-		}
-
-		// Set up the socket for listening for a message unless we're already set up...
-		if !sig.isBound {
-			try self.listen(on: port, maxBacklogSize: maxBacklogSize)
-		}
-
-		// If we're not bound, something went wrong...
-		guard self.signature?.isBound == true else {
-
-			throw Error(code: Socket.SOCKET_ERR_LISTEN_FAILED, reason: "")
-		}
-
-		self.isListening = true
-
-		return try self.readDatagram(into: data)
-	}
-
-	///
-	/// Listen for a message on a UDP socket.
-	///
-	/// - Parameters:
-	///		- data:				Data buffer to receive the data read.
-	///		- port:				Port to listen on.
-	/// 	- maxBacklogSize: 	The maximum size of the queue containing pending connections. Default is *Socket.SOCKET_DEFAULT_MAX_BACKLOG*.
-	///
-	///	- Returns:				Tuple containing the number of bytes read and the `Address` of the client who sent the data.
-	///
 	public func listen(forMessage data: inout Data, on port: Int, maxBacklogSize: Int = Socket.SOCKET_DEFAULT_MAX_BACKLOG) throws -> (bytesRead: Int, address: Address?) {
 
 		// The socket must've been created...
@@ -2574,7 +2533,7 @@ public class Socket: SocketReader, SocketWriter {
 	///
 	/// - Throws: `Socket.SOCKET_ERR_RECV_BUFFER_TOO_SMALL` if the buffer provided is too small and `truncate = false`.
 	///		Call again with proper buffer size (see `Error.bufferSizeNeeded`) or
-	///		use `readData(data: NSMutableData)`.
+	///		use `read(into: &data)` with a `Data` buffer.
 	///
 	/// - Returns: The number of bytes returned in the buffer.
 	///
@@ -2598,35 +2557,29 @@ public class Socket: SocketReader, SocketWriter {
 		}
 
 		// See if we have cached data to send back...
-		if self.readStorage.length > 0 {
+		if self.readStorage.count > 0 {
 
-			if bufSize < self.readStorage.length {
+			if bufSize < self.readStorage.count {
 
 				if truncate {
 
-					memcpy(buffer, self.readStorage.bytes, bufSize)
-
-					#if os(Linux)
-						// Workaround for apparent bug in NSMutableData
-						self.readStorage = NSMutableData(bytes: self.readStorage.bytes.advanced(by: bufSize), length:self.readStorage.length - bufSize)
-					#else
-						self.readStorage.replaceBytes(in: NSRange(location:0, length:bufSize), withBytes: nil, length: 0)
-					#endif
+					_ = self.readStorage.copyBytes(to: UnsafeMutableBufferPointer(start: UnsafeMutableRawPointer(buffer).assumingMemoryBound(to: UInt8.self), count: bufSize))
+					self.readStorage.removeFirst(bufSize)
 					return bufSize
 
 				} else {
 
-					throw Error(bufferSize: self.readStorage.length)
+					throw Error(bufferSize: self.readStorage.count)
 				}
 			}
 
-			let returnCount = self.readStorage.length
+			let returnCount = self.readStorage.count
 
 			// - We've got data we've already read, copy to the caller's buffer...
-			memcpy(buffer, self.readStorage.bytes, self.readStorage.length)
+			_ = self.readStorage.copyBytes(to: UnsafeMutableBufferPointer(start: UnsafeMutableRawPointer(buffer).assumingMemoryBound(to: UInt8.self), count: returnCount))
 
 			// - Reset the storage buffer...
-			self.readStorage.length = 0
+			self.readStorage.removeAll(keepingCapacity: true)
 
 			return returnCount
 		}
@@ -2642,40 +2595,34 @@ public class Socket: SocketReader, SocketWriter {
 
 		// Did we get data?
 		var returnCount: Int = 0
-		if self.readStorage.length > 0 {
+		if self.readStorage.count > 0 {
 
 			// Is the caller's buffer big enough?
-			if bufSize < self.readStorage.length {
+			if bufSize < self.readStorage.count {
 
 				// It isn't should we just use the available space?
 				if truncate {
 
 					// Yep, copy what storage we can and remove the bytes from the internal buffer.
-					memcpy(buffer, self.readStorage.bytes, bufSize)
-
-					#if os(Linux)
-						// Workaround for apparent bug in NSMutableData
-						self.readStorage = NSMutableData(bytes: self.readStorage.bytes.advanced(by: bufSize), length:self.readStorage.length - bufSize)
-					#else
-						self.readStorage.replaceBytes(in: NSRange(location:0, length:bufSize), withBytes: nil, length: 0)
-					#endif
+					_ = self.readStorage.copyBytes(to: UnsafeMutableBufferPointer(start: UnsafeMutableRawPointer(buffer).assumingMemoryBound(to: UInt8.self), count: bufSize))
+					self.readStorage.removeFirst(bufSize)
 
 					return bufSize
 
 				} else {
 
 					// Nope, throw an exception telling the caller how big the buffer must be...
-					throw Error(bufferSize: self.readStorage.length)
+					throw Error(bufferSize: self.readStorage.count)
 				}
 			}
 
 			// - We've read data, copy to the callers buffer...
-			memcpy(buffer, self.readStorage.bytes, self.readStorage.length)
+			_ = self.readStorage.copyBytes(to: UnsafeMutableBufferPointer(start: UnsafeMutableRawPointer(buffer).assumingMemoryBound(to: UInt8.self), count: self.readStorage.count))
 
-			returnCount = self.readStorage.length
+			returnCount = self.readStorage.count
 
 			// - Reset the storage buffer...
-			self.readStorage.length = 0
+			self.readStorage.removeAll(keepingCapacity: true)
 		}
 
 		return returnCount
@@ -2688,60 +2635,19 @@ public class Socket: SocketReader, SocketWriter {
 	///
 	public func readString() throws -> String? {
 
-		guard let data = NSMutableData(capacity: 2000) else {
+		var data = Data(capacity: 2000)
 
-			throw Error(code: Socket.SOCKET_ERR_INTERNAL, reason: "Unable to create temporary NSMutableData...")
+		let rc = try self.read(into: &data)
+
+		guard rc > 0,
+			let str = String(data: data, encoding: .utf8) else {
+
+				throw Error(code: Socket.SOCKET_ERR_INTERNAL, reason: "Unable to convert data to String.")
 		}
 
-		let rc = try self.read(into: data)
-
-		guard let str = NSString(bytes: data.bytes, length: data.length, encoding: String.Encoding.utf8.rawValue),
-			rc > 0 else {
-
-				throw Error(code: Socket.SOCKET_ERR_INTERNAL, reason: "Unable to convert data to NSString.")
-		}
-
-		return String(describing: str)
+		return str
 	}
 
-
-	///
-	/// Read data from the socket.
-	///
-	/// - Parameter data: The buffer to return the data in.
-	///
-	/// - Returns: The number of bytes returned in the buffer.
-	///
-	public func read(into data: NSMutableData) throws -> Int {
-
-		// The socket must've been created and must be connected...
-		if self.socketfd == Socket.SOCKET_INVALID_DESCRIPTOR {
-
-			throw Error(code: Socket.SOCKET_ERR_BAD_DESCRIPTOR, reason: "Socket has an invalid descriptor")
-		}
-
-		if !self.isConnected {
-
-			throw Error(code: Socket.SOCKET_ERR_NOT_CONNECTED, reason: "Socket is not connected")
-		}
-
-		// Read all available bytes...
-		let count = try self.readDataIntoStorage()
-
-		// Did we get data?
-		var returnCount: Int = 0
-		if count > 0 {
-
-			data.append(self.readStorage.bytes, length: self.readStorage.length)
-
-			returnCount = self.readStorage.length
-
-			// - Reset the storage buffer...
-			self.readStorage.length = 0
-		}
-
-		return returnCount
-	}
 
 	///
 	/// Read data from the socket.
@@ -2772,12 +2678,12 @@ public class Socket: SocketReader, SocketWriter {
 		if count > 0 {
 
 			// - Yes, move to caller's buffer...
-			data.append(self.readStorage.bytes.assumingMemoryBound(to: UInt8.self), count: self.readStorage.length)
+			data.append(self.readStorage)
 
-			returnCount = self.readStorage.length
+			returnCount = self.readStorage.count
 
 			// - Reset the storage buffer...
-			self.readStorage.length = 0
+			self.readStorage.removeAll(keepingCapacity: true)
 		}
 
 		return returnCount
@@ -2827,64 +2733,22 @@ public class Socket: SocketReader, SocketWriter {
 
 		// Did we get data?
 		var returnCount: Int = 0
-		if self.readStorage.length > 0 {
+		if self.readStorage.count > 0 {
 
 			// Is the caller's buffer big enough?
-			if bufSize < self.readStorage.length {
+			if bufSize < self.readStorage.count {
 
 				// No, discard the excess data...
-				self.readStorage.length = bufSize
+				self.readStorage.removeSubrange(bufSize..<self.readStorage.count)
 			}
 
 			// - We've read data, copy to the callers buffer...
-			memcpy(buffer, self.readStorage.bytes, self.readStorage.length)
+			_ = self.readStorage.copyBytes(to: UnsafeMutableBufferPointer(start: UnsafeMutableRawPointer(buffer).assumingMemoryBound(to: UInt8.self), count: self.readStorage.count))
 
-			returnCount = self.readStorage.length
-
-			// - Reset the storage buffer...
-			self.readStorage.length = 0
-		}
-
-		return (returnCount, address)
-	}
-
-	///
-	/// Read data from a UDP socket.
-	///
-	/// - Parameters:
-	///		- data: 	The buffer to return the data in.
-	///		- address: 	Address to write data to.
-	///
-	/// - Returns: Tuple with the number of bytes returned in the buffer and the address they were received from.
-	///
-	public func readDatagram(into data: NSMutableData) throws -> (bytesRead: Int, address: Address?) {
-
-		// The socket must've been created...
-		if self.socketfd == Socket.SOCKET_INVALID_DESCRIPTOR {
-
-			throw Error(code: Socket.SOCKET_ERR_BAD_DESCRIPTOR, reason: "Socket has an invalid descriptor")
-		}
-
-		// The socket must've been created for UDP...
-		guard let sig = self.signature,
-			sig.socketType == .datagram else {
-
-			throw Error(code: Socket.SOCKET_ERR_WRONG_PROTOCOL, reason: "This is not a UDP socket.")
-		}
-
-		// Read all available bytes...
-		let (count, address) = try self.readDatagramIntoStorage()
-
-		// Did we get data?
-		var returnCount: Int = 0
-		if count > 0 {
-
-			data.append(self.readStorage.bytes, length: self.readStorage.length)
-
-			returnCount = self.readStorage.length
+			returnCount = self.readStorage.count
 
 			// - Reset the storage buffer...
-			self.readStorage.length = 0
+			self.readStorage.removeAll(keepingCapacity: true)
 		}
 
 		return (returnCount, address)
@@ -2922,12 +2786,12 @@ public class Socket: SocketReader, SocketWriter {
 		if count > 0 {
 
 			// - Yes, move to caller's buffer...
-			data.append(self.readStorage.bytes.assumingMemoryBound(to: UInt8.self), count: self.readStorage.length)
+			data.append(self.readStorage)
 
-			returnCount = self.readStorage.length
+			returnCount = self.readStorage.count
 
 			// - Reset the storage buffer...
-			self.readStorage.length = 0
+			self.readStorage.removeAll(keepingCapacity: true)
 		}
 
 		return (returnCount, address)
@@ -3531,7 +3395,7 @@ public class Socket: SocketReader, SocketWriter {
 		#endif
 
 		var recvFlags: Int32 = 0
-		if self.readStorage.length > 0 {
+		if self.readStorage.count > 0 {
 			recvFlags |= Int32(MSG_DONTWAIT)
 		}
 
@@ -3597,7 +3461,7 @@ public class Socket: SocketReader, SocketWriter {
 				// - Could be an error, but if errno is EAGAIN or EWOULDBLOCK (if a non-blocking socket),
 				//	it means there was NO data to read...
 				case EWOULDBLOCK, EAGAIN:
-					return self.readStorage.length
+					return self.readStorage.count
 
 				case ECONNRESET:
 					// - Handle a connection reset by peer (ECONNRESET) and throw a different exception...
@@ -3618,7 +3482,9 @@ public class Socket: SocketReader, SocketWriter {
 			}
 
 			// Save the data in the buffer...
-			self.readStorage.append(self.readBuffer, length: count)
+			self.readBuffer.withMemoryRebound(to: UInt8.self, capacity: count) {
+				self.readStorage.append($0, count: count)
+			}
 
 			// Didn't fill the buffer so we've got everything available...
 			if count < self.readBufferSize {
@@ -3628,7 +3494,7 @@ public class Socket: SocketReader, SocketWriter {
 
 		} while count > 0
 
-		return self.readStorage.length
+		return self.readStorage.count
 	}
 
 	///
@@ -3645,7 +3511,7 @@ public class Socket: SocketReader, SocketWriter {
 			self.readBuffer.initialize(to: 0x0, count: readBufferSize)
 		#endif
 		var recvFlags: Int32 = 0
-		if self.readStorage.length > 0 {
+		if self.readStorage.count > 0 {
 			recvFlags |= Int32(MSG_DONTWAIT)
 		}
 		
@@ -3666,7 +3532,7 @@ public class Socket: SocketReader, SocketWriter {
 					//		it means there was NO data to read...
 					if errno == EAGAIN || errno == EWOULDBLOCK {
 
-						throw OperationInterrupted.readDatagram(length: self.readStorage.length)
+						throw OperationInterrupted.readDatagram(length: self.readStorage.count)
 					}
 					
 					// - Handle a connection reset by peer (ECONNRESET) and throw a different exception...
@@ -3685,13 +3551,15 @@ public class Socket: SocketReader, SocketWriter {
 				}
 				
 				// Save the data in the buffer...
-				self.readStorage.append(self.readBuffer, length: count)
+				self.readBuffer.withMemoryRebound(to: UInt8.self, capacity: count) {
+					self.readStorage.append($0, count: count)
+				}
 			}) else {
 				
 				throw Error(code: Socket.SOCKET_ERR_WRONG_PROTOCOL, reason: "Unable to determine receiving socket protocol family.")
 			}
 			
-			return (self.readStorage.length, address)
+			return (self.readStorage.count, address)
 			
 		} catch OperationInterrupted.readDatagram(let length) {
 			

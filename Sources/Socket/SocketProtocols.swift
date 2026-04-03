@@ -43,14 +43,6 @@ public protocol SocketReader {
 	///
 	func read(into data: inout Data) throws -> Int
 	
-	///
-	/// Reads all available data into an **NSMutableData** object.
-	///
-	/// - Parameter data: **NSMutableData** object to contain read data.
-	///
-	/// - Returns: Integer representing the number of bytes read.
-	///
-	func read(into data: NSMutableData) throws -> Int
 }
 
 // MARK: Writer
