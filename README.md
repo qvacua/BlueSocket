@@ -16,6 +16,10 @@
 
 # BlueSocket
 
+This is a fork of [BlueSocket](https://github.com/Kitura/BlueSocket).
+It seems the original project is not maintained anymore.
+Used in my app, [VimR](https://github.com/qvacua/vimr).
+
 Socket framework for Swift using the Swift Package Manager. Works on iOS, macOS, and Linux.
 
 ## Prerequisites
