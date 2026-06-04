@@ -1,0 +1,23 @@
+--swiftversion 6.0
+
+--exclude **/*.template.swift,.build,.swiftpm
+
+--indent 2
+--maxwidth 100
+
+--self insert
+--wraparguments before-first
+--ranges no-space
+
+--strip-unused-args unnamed-only
+
+--ifdef no-indent
+--import-grouping testable-bottom # sortedImports
+--trailing-commas always
+
+--rules sortImports
+--rules redundantSelf
+--rules indent
+--rules wraparguments
+--rules trailingCommas
+--rules typeSugar

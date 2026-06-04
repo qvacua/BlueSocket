@@ -34,7 +34,6 @@ let package = Package(
         .target(
             name: "Socket",
             dependencies: [],
-            exclude: ["Info.plist", "Socket.h"]
         ),
         .testTarget(
             name: "SocketTests",

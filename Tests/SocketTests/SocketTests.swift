@@ -1513,33 +1513,4 @@ class SocketTests: XCTestCase {
 			XCTFail()
 		}
 	}
-    
-	static var allTests = [
-		("testDefaultCreate", testDefaultCreate),
-		("testCreateIPV6", testCreateIPV6),
-		("testCreateUnix", testCreateUnix),
-		("testCreateUDP", testCreateUDP),
-		("testListen", testListen),
-		("testListenPort0", testListenPort0),
-		("testListenUnix", testListenUnix),
-		("testListenUDP", testListenUDP),
-		("testListenPort0UDP", testListenPort0UDP),
-		("testConnect", testConnect),
-		("testConnectTo", testConnectTo),
-		("testConnectToWithTimeout", testConnectToWithTimeout),
-		("testConnectToPath", testConnectToPath),
-		("testConnectPort0", testConnectPort0),
-		("testHostnameAndPort", testHostnameAndPort),
-		("testBlocking", testBlocking),
-		("testSetReadTimeout", testSetReadTimeout),
-		("testSetWriteTimeout", testSetWriteTimeout),
-		("testIsReadableWritableFail", testIsReadableWritableFail),
-		("testIsReadableWritable", testIsReadableWritable),
-		("testFDSetBitFields", testFDSetBitFields),
-		("testDomainSocketPath", testDomainSocketPath),
-		("testReadWrite", testReadWrite),
-		("testTruncateTCP", testTruncateTCP),
-		("testReadWriteUDP", testReadWriteUDP),
-		("testReadWriteUnix", testReadWriteUnix),
-	]
 }
