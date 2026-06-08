@@ -332,11 +332,11 @@ public class Socket: SocketReader, SocketWriter {
 
       switch self {
 
-      case .ipv4( _):
+      case .ipv4:
         return MemoryLayout<(sockaddr_in)>.size
-      case .ipv6( _):
+      case .ipv6:
         return MemoryLayout<(sockaddr_in6)>.size
-      case .unix( _):
+      case .unix:
         return MemoryLayout<(sockaddr_un)>.size
       }
     }
@@ -346,11 +346,11 @@ public class Socket: SocketReader, SocketWriter {
     ///
     public var family: ProtocolFamily {
       switch self {
-      case .ipv4(_):
+      case .ipv4:
         return ProtocolFamily.inet
-      case .ipv6(_):
+      case .ipv6:
         return ProtocolFamily.inet6
-      case .unix(_):
+      case .unix:
         return ProtocolFamily.unix
       }
     }
@@ -395,12 +395,12 @@ public class Socket: SocketReader, SocketWriter {
     ///
     /// Path for .unix type sockets. (Readonly)
     ///
-    public internal(set) var path: String? = nil
+    public internal(set) var path: String?
 
     ///
     /// Address info for socket. (Readonly)
     ///
-    public internal(set) var address: Address? = nil
+    public internal(set) var address: Address?
 
     ///
     /// Flag to indicate whether `Socket` is secure or not. (Readonly)
@@ -545,7 +545,7 @@ public class Socket: SocketReader, SocketWriter {
     ) throws {
 
       // Make sure we have what we need...
-      guard let _ = hostname,
+      guard hostname != nil,
             let port = port, protocolFamily == .inet || protocolFamily == .inet6 else {
 
         throw Error(
@@ -687,7 +687,7 @@ public class Socket: SocketReader, SocketWriter {
       guard let family = ProtocolFamily.getFamily(forValue: protocolFamily),
             let type = SocketType.getType(forValue: socketType),
             let pro = SocketProtocol.getProtocol(forValue: proto),
-            let _ = hostname,
+            hostname != nil,
             let port = port else {
 
         throw Error(
@@ -912,12 +912,12 @@ public class Socket: SocketReader, SocketWriter {
   /// The signature for the socket. (Readonly)
   /// 	**Note:** See Signature above.
   ///
-  public internal(set) var signature: Signature? = nil
+  public internal(set) var signature: Signature?
 
   ///
   /// The delegate that provides the SSL implementation.
   ///
-  public var delegate: SSLServiceDelegate? = nil {
+  public var delegate: SSLServiceDelegate? {
 
     didSet {
 
@@ -1067,7 +1067,6 @@ public class Socket: SocketReader, SocketWriter {
     return path
   }
 
-
   // MARK: Class Functions
 
   ///
@@ -1193,7 +1192,7 @@ public class Socket: SocketReader, SocketWriter {
       return nil
     }
 
-    if let s = String(validatingCString: buf) {
+    if let s = String(validatingCString: &buf) {
       return (s, port)
 
     }
@@ -1542,7 +1541,7 @@ public class Socket: SocketReader, SocketWriter {
 
     // Accept the remote connection...
     var socketfd2: Int32 = Socket.SOCKET_INVALID_DESCRIPTOR
-    var address: Address? = nil
+    var address: Address?
 
     var keepRunning: Bool = true
     repeat {
@@ -1664,7 +1663,7 @@ public class Socket: SocketReader, SocketWriter {
 
     // Accept the remote connection...
     var socketfd2: Int32 = Socket.SOCKET_INVALID_DESCRIPTOR
-    var address: Address? = nil
+    var address: Address?
 
     var keepRunning: Bool = true
     repeat {
@@ -2554,7 +2553,7 @@ public class Socket: SocketReader, SocketWriter {
     guard let signature = sig else {
 
       throw Error(
-        code:Socket.SOCKET_ERR_BAD_SIGNATURE_PARAMETERS,
+        code: Socket.SOCKET_ERR_BAD_SIGNATURE_PARAMETERS,
         reason: "Socket contains invalid signature parameters"
       )
     }
@@ -2869,7 +2868,6 @@ public class Socket: SocketReader, SocketWriter {
     return str
   }
 
-
   ///
   /// Read data from the socket.
   ///
@@ -3181,11 +3179,11 @@ public class Socket: SocketReader, SocketWriter {
       return 0
     }
     #if swift(>=5.0)
-    return try data.withUnsafeBytes() { [unowned self] (buffer: UnsafeRawBufferPointer) throws -> Int in
+    return try data.withUnsafeBytes { [unowned self] (buffer: UnsafeRawBufferPointer) throws -> Int in
       return try self.write(from: buffer.baseAddress!, bufSize: data.count)
     }
     #else
-    return try data.withUnsafeBytes() { [unowned self] (buffer: UnsafePointer<UInt8>) throws -> Int in
+    return try data.withUnsafeBytes { [unowned self] (buffer: UnsafePointer<UInt8>) throws -> Int in
 
       return try self.write(from: buffer, bufSize: data.count)
     }
@@ -3202,7 +3200,7 @@ public class Socket: SocketReader, SocketWriter {
   ///
   @discardableResult public func write(from string: String) throws -> Int {
 
-    return try string.utf8CString.withUnsafeBufferPointer() {
+    return try string.utf8CString.withUnsafeBufferPointer {
 
       // The count returned by nullTerminatedUTF8 includes the null terminator...
       return try self.write(from: $0.baseAddress!, bufSize: $0.count-1)
@@ -3340,11 +3338,11 @@ public class Socket: SocketReader, SocketWriter {
 
     // Send the bytes...
     #if swift(>=5.0)
-    return try data.withUnsafeBytes() { [unowned self] (buffer: UnsafeRawBufferPointer) throws -> Int in
+    return try data.withUnsafeBytes { [unowned self] (buffer: UnsafeRawBufferPointer) throws -> Int in
       return try self.write(from: buffer.baseAddress!, bufSize: data.count, to: address)
     }
     #else
-    return try data.withUnsafeBytes() { [unowned self] (buffer: UnsafePointer<UInt8>) throws -> Int in
+    return try data.withUnsafeBytes { [unowned self] (buffer: UnsafePointer<UInt8>) throws -> Int in
 
       return try self.write(from: buffer, bufSize: data.count, to: address)
     }
@@ -3362,7 +3360,7 @@ public class Socket: SocketReader, SocketWriter {
   ///
   @discardableResult public func write(from string: String, to address: Address) throws -> Int {
 
-    return try string.utf8CString.withUnsafeBufferPointer() {
+    return try string.utf8CString.withUnsafeBufferPointer {
 
       // The count returned by nullTerminatedUTF8 includes the null terminator...
       return try self.write(from: $0.baseAddress!, bufSize: $0.count-1, to: address)
@@ -3647,7 +3645,7 @@ public class Socket: SocketReader, SocketWriter {
       self.socketfd = Socket.SOCKET_INVALID_DESCRIPTOR
     }
 
-    if let _ = self.signature {
+    if self.signature != nil {
       self.signature!.hostname = Socket.NO_HOSTNAME
       self.signature!.port = Socket.SOCKET_INVALID_PORT
 

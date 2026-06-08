@@ -18,6 +18,7 @@
 // 	limitations under the License.
 //
 
+// swiftlint:disable:next blanket_disable_command
 // swiftlint:disable no_direct_standard_out_logs
 
 import Dispatch
@@ -36,14 +37,6 @@ class SocketTests: XCTestCase {
   let port: Int32 = 1337
   let host: String = "127.0.0.1"
   let path: String = "/tmp/server.test.socket"
-	
-  override func setUp() {
-    super.setUp()
-  }
-    
-  override func tearDown() {
-    super.tearDown()
-  }
 	
   func createHelper(family: Socket.ProtocolFamily = .inet) throws -> Socket {
 		
@@ -70,8 +63,7 @@ class SocketTests: XCTestCase {
     let queue: DispatchQueue? = DispatchQueue.global(qos: .userInteractive)
     guard let pQueue = queue else {
 			
-      print("Unable to access global interactive QOS queue")
-      XCTFail()
+      XCTFail("Unable to access global interactive QOS queue")
       return
     }
 		
@@ -85,13 +77,11 @@ class SocketTests: XCTestCase {
 				
         guard let socketError = error as? Socket.Error else {
 					
-          print("Unexpected error...")
-          XCTFail()
+          XCTFail("Unexpected error...")
           return
         }
 				
-        print("launchServerHelper Error reported:\n \(socketError.description)")
-        XCTFail()
+        XCTFail("launchServerHelper Error reported:\n \(socketError.description)")
       }
     }
   }
@@ -99,7 +89,7 @@ class SocketTests: XCTestCase {
   func serverHelper(family: Socket.ProtocolFamily = .inet) throws {
 		
     var keepRunning: Bool = true
-    var listenSocket: Socket? = nil
+    var listenSocket: Socket?
 		
     do {
 			
@@ -107,8 +97,7 @@ class SocketTests: XCTestCase {
 			
       guard let listener = listenSocket else {
 				
-        print("Unable to unwrap socket...")
-        XCTFail()
+        XCTFail("Unable to unwrap socket...")
         return
       }
 			
@@ -194,8 +183,7 @@ class SocketTests: XCTestCase {
 			
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
@@ -203,8 +191,7 @@ class SocketTests: XCTestCase {
       if socketError.errorCode == Int32(Socket.SOCKET_ERR_WRITE_FAILED) {
         return
       }
-      print("serverHelper Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("serverHelper Error reported: \(socketError.description)")
     }
   }
 
@@ -213,8 +200,7 @@ class SocketTests: XCTestCase {
     let queue: DispatchQueue? = DispatchQueue.global(qos: .userInteractive)
     guard let pQueue = queue else {
 
-      print("Unable to access global interactive QOS queue")
-      XCTFail()
+      XCTFail("Unable to access global interactive QOS queue")
       return
     }
 
@@ -228,13 +214,11 @@ class SocketTests: XCTestCase {
 
         guard let socketError = error as? Socket.Error else {
 
-          print("Unexpected error...")
-          XCTFail()
+          XCTFail("Unexpected error...")
           return
         }
 
-        print("launchUDPHelper Error reported:\n \(socketError.description)")
-        XCTFail()
+        XCTFail("launchUDPHelper Error reported:\n \(socketError.description)")
       }
     }
   }
@@ -276,8 +260,7 @@ class SocketTests: XCTestCase {
 			
       guard let socketError = error as? Socket.Error else {
 
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 
@@ -285,8 +268,7 @@ class SocketTests: XCTestCase {
       if socketError.errorCode == Int32(Socket.SOCKET_ERR_WRITE_FAILED) {
         return
       }
-      print("udpHelper Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("udpHelper Error reported: \(socketError.description)")
     }
   }
 	
@@ -300,8 +282,7 @@ class SocketTests: XCTestCase {
 			
       guard let response = NSString(data: data as Data, encoding: String.Encoding.utf8.rawValue) else {
 				
-        print("Error accessing received data...")
-        XCTFail()
+        XCTFail("Error accessing received data...")
         return nil
       }
 			
@@ -336,13 +317,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
                 
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
             
-      print("testDefaultCreate Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testDefaultCreate Error reported: \(socketError.description)")
     }
   }
 	
@@ -370,13 +349,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testCreateIPV6 Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testCreateIPV6 Error reported: \(socketError.description)")
     }
   }
 	
@@ -404,13 +381,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testCreateUnix Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testCreateUnix Error reported: \(socketError.description)")
     }
   }
 	
@@ -438,13 +413,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testCreateUnix Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testCreateUnix Error reported: \(socketError.description)")
     }
   }
 	
@@ -469,13 +442,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testListen Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testListen Error reported: \(socketError.description)")
     }
   }
 	
@@ -501,13 +472,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testListenPort0 Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testListenPort0 Error reported: \(socketError.description)")
     }
   }
 	
@@ -532,13 +501,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testListenUnix Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testListenUnix Error reported: \(socketError.description)")
     }
   }
 	
@@ -547,8 +514,7 @@ class SocketTests: XCTestCase {
     let queue: DispatchQueue? = DispatchQueue.global(qos: .userInteractive)
     guard let pQueue = queue else {
 			
-      print("Unable to access global interactive QOS queue")
-      XCTFail()
+      XCTFail("Unable to access global interactive QOS queue")
       return
     }
 		
@@ -569,14 +535,12 @@ class SocketTests: XCTestCase {
           // See if it's a socket error or something else...
           guard let socketError = error as? Socket.Error else {
 						
-            print("Unexpected error...")
-            XCTFail()
+            XCTFail("Unexpected error...")
             return
           }
 					
           if socketError.errorCode != Int32(Socket.SOCKET_ERR_RECV_FAILED) {
-            print("testListenUDP Error reported: \(socketError.description)")
-            XCTFail()
+            XCTFail("testListenUDP Error reported: \(socketError.description)")
           }
         }
       }
@@ -600,13 +564,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testListenUDP Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testListenUDP Error reported: \(socketError.description)")
     }
   }
 	
@@ -615,8 +577,7 @@ class SocketTests: XCTestCase {
     let queue: DispatchQueue? = DispatchQueue.global(qos: .userInteractive)
     guard let pQueue = queue else {
 			
-      print("Unable to access global interactive QOS queue")
-      XCTFail()
+      XCTFail("Unable to access global interactive QOS queue")
       return
     }
 		
@@ -637,14 +598,12 @@ class SocketTests: XCTestCase {
           // See if it's a socket error or something else...
           guard let socketError = error as? Socket.Error else {
 						
-            print("Unexpected error...")
-            XCTFail()
+            XCTFail("Unexpected error...")
             return
           }
 					
           if socketError.errorCode != Int32(Socket.SOCKET_ERR_RECV_FAILED) {
-            print("testListenPort0UDP Error reported: \(socketError.description)")
-            XCTFail()
+            XCTFail("testListenPort0UDP Error reported: \(socketError.description)")
           }
         }
       }
@@ -669,13 +628,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testListenPort0UDP Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testListenPort0UDP Error reported: \(socketError.description)")
     }
   }
 	
@@ -717,13 +674,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testConnect Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testConnect Error reported: \(socketError.description)")
     }
   }
 	
@@ -758,13 +713,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testConnectTo Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testConnectTo Error reported: \(socketError.description)")
     }
   }
 	
@@ -799,13 +752,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testConnectTo Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testConnectTo Error reported: \(socketError.description)")
     }
   }
 	
@@ -839,13 +790,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testConnectToPath Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testConnectToPath Error reported: \(socketError.description)")
     }
   }
 	
@@ -889,13 +838,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testConnectPort0 Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testConnectPort0 Error reported: \(socketError.description)")
     }
   }
 	
@@ -944,13 +891,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testHostnameAndPort Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testHostnameAndPort Error reported: \(socketError.description)")
     }
   }
 	
@@ -981,13 +926,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testBlocking Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testBlocking Error reported: \(socketError.description)")
     }
   }
 	
@@ -1017,13 +960,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testSetReadTimeout Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testSetReadTimeout Error reported: \(socketError.description)")
     }
   }
 	
@@ -1055,13 +996,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testSetWriteTimeout Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testSetWriteTimeout Error reported: \(socketError.description)")
     }
   }
 	
@@ -1087,8 +1026,7 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
@@ -1138,13 +1076,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testConnectTo Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testConnectTo Error reported: \(socketError.description)")
     }
   }
 	
@@ -1177,8 +1113,7 @@ class SocketTests: XCTestCase {
 
     } catch {
 			
-      print("Unexpected error...")
-      XCTFail()
+      XCTFail("Unexpected error...")
     }
   }
 	
@@ -1258,13 +1193,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testReadWrite Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testReadWrite Error reported: \(socketError.description)")
     }
 		
   }
@@ -1367,13 +1300,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 
-      print("testTruncateTCP Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testTruncateTCP Error reported: \(socketError.description)")
     }
 		
   }
@@ -1462,13 +1393,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 
-      print("testReadWriteUDP Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testReadWriteUDP Error reported: \(socketError.description)")
     }
   }
 	
@@ -1539,13 +1468,11 @@ class SocketTests: XCTestCase {
       // See if it's a socket error or something else...
       guard let socketError = error as? Socket.Error else {
 				
-        print("Unexpected error...")
-        XCTFail()
+        XCTFail("Unexpected error...")
         return
       }
 			
-      print("testReadWriteUnix Error reported: \(socketError.description)")
-      XCTFail()
+      XCTFail("testReadWriteUnix Error reported: \(socketError.description)")
     }
   }
 }
