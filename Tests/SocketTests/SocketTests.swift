@@ -1256,20 +1256,11 @@ class SocketTests: XCTestCase {
       print("Wrote '\(hello)' to socket...")
 
       let buf = UnsafeMutablePointer<CChar>.allocate(capacity: 19)
-      #if swift(>=4.1)
       buf.initialize(repeating: 0, count: 19)
-      #else
-      buf.initialize(to: 0, count: 19)
-      #endif
 
       defer {
-        #if swift(>=4.1)
         buf.deinitialize(count: 19)
         buf.deallocate()
-        #else
-        buf.deinitialize()
-        buf.deallocate(capacity: 19)
-        #endif
       }
 
       // Save room for a null character...
@@ -1353,20 +1344,11 @@ class SocketTests: XCTestCase {
       try socket.write(from: Data("Hello again".utf8), to: addr!)
 
       let buf = UnsafeMutablePointer<CChar>.allocate(capacity: 10)
-      #if swift(>=4.1)
       buf.initialize(repeating: 0, count: 10)
-      #else
-      buf.initialize(to: 0, count: 10)
-      #endif
 
       defer {
-        #if swift(>=4.1)
         buf.deinitialize(count: 10)
         buf.deallocate()
-        #else
-        buf.deinitialize()
-        buf.deallocate(capacity: 10)
-        #endif
       }
 			
       // Save room for a null character...
