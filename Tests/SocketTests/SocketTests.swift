@@ -144,9 +144,8 @@ class SocketTests: XCTestCase {
 					
           guard let response = NSString(data: readData, encoding: String.Encoding.utf8.rawValue) else {
 						
-            print("Error decoding response...")
             readData.count = 0
-            XCTFail()
+            XCTFail("Error decoding response...")
             break
           }
 					
@@ -238,9 +237,8 @@ class SocketTests: XCTestCase {
 
         guard let response = NSString(data: data, encoding: String.Encoding.utf8.rawValue) else {
 
-          print("Error decoding response...")
           data.count = 0
-          XCTFail()
+          XCTFail("Error decoding response...")
           return
         }
 
@@ -984,7 +982,7 @@ class SocketTests: XCTestCase {
 			
       // It should be noted that this write should succeed...
       //	If this was a TCP socket, the results would be different...
-      let bytesWritten = try socket.write(from: "Hello from UDP".data(using: .utf8)!, to: addr!)
+      let bytesWritten = try socket.write(from: Data("Hello from UDP".utf8), to: addr!)
       XCTAssertEqual(bytesWritten, 14)
 			
       // Close the socket...
@@ -1019,7 +1017,7 @@ class SocketTests: XCTestCase {
 			
       // Expect this to fail with Socket.SOCKET_ERR_NOT_CONNECTED exception...
       _ = try socket.isReadableOrWritable()
-      XCTFail()
+      XCTFail("This should be unreachable")
 			
     } catch let error {
 			
@@ -1337,23 +1335,22 @@ class SocketTests: XCTestCase {
       let addr = Socket.createAddress(for: hostname, on: port)
 
       XCTAssertNotNil(addr)
-      try socket.write(from: "Hello from UDP".data(using: .utf8)!, to: addr!)
+      try socket.write(from: Data("Hello from UDP".utf8), to: addr!)
 
       var data = Data()
       var (_, address) = try socket.readDatagram(into: &data)
 
       guard let response = NSString(data: data, encoding: String.Encoding.utf8.rawValue) else {
 
-        print("Error decoding response...")
         data.count = 0
-        XCTFail()
+        XCTFail("Error decoding response...")
         return
       }
 
       var (remoteHost, remotePort) = Socket.hostnameAndPort(from: address!)!
       print("Received from \(remoteHost):\(remotePort): \(response)\n")
 
-      try socket.write(from: "Hello again".data(using: .utf8)!, to: addr!)
+      try socket.write(from: Data("Hello again".utf8), to: addr!)
 
       let buf = UnsafeMutablePointer<CChar>.allocate(capacity: 10)
       #if swift(>=4.1)
@@ -1380,7 +1377,7 @@ class SocketTests: XCTestCase {
       print("Received from \(remoteHost):\(remotePort): \(response2)\n")
 
       print("Sending quit to server...")
-      try socket.write(from: "QUIT".data(using: .utf8)!, to: addr!)
+      try socket.write(from: Data("QUIT".utf8), to: addr!)
 
       // Need to wait for the server to go down before continuing...
       #if os(Linux)

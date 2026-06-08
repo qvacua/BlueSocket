@@ -125,7 +125,7 @@ public class Socket: SocketReader, SocketWriter {
   ///			inet6 = AF_INET6 (IPV6)
   ///			unix = AF_UNIX
   ///
-  public enum ProtocolFamily {
+  public enum ProtocolFamily: Sendable {
 
     /// AF_INET (IPV4)
     case inet
