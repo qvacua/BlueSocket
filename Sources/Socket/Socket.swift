@@ -1193,7 +1193,7 @@ public class Socket: SocketReader, SocketWriter {
       return nil
     }
 
-    if let s = String(validatingUTF8: buf) {
+    if let s = String(validatingCString: buf) {
       return (s, port)
 
     }
@@ -1315,7 +1315,7 @@ public class Socket: SocketReader, SocketWriter {
 
       throw Error(
         code: Socket.SOCKET_ERR_SELECT_FAILED,
-        reason: String(validatingUTF8: strerror(errno)) ?? "Error: \(errno)"
+        reason: String(validatingCString: strerror(errno)) ?? "Error: \(errno)"
       )
     }
 
@@ -1855,9 +1855,9 @@ public class Socket: SocketReader, SocketWriter {
 
       var errorString: String
       if status == EAI_SYSTEM {
-        errorString = String(validatingUTF8: strerror(errno)) ?? "Unknown error code."
+        errorString = String(validatingCString: strerror(errno)) ?? "Unknown error code."
       } else {
-        errorString = String(validatingUTF8: gai_strerror(status)) ?? "Unknown error code."
+        errorString = String(validatingCString: gai_strerror(status)) ?? "Unknown error code."
       }
       throw Error(code: Socket.SOCKET_ERR_GETADDRINFO_FAILED, reason: errorString)
     }
@@ -2394,9 +2394,9 @@ public class Socket: SocketReader, SocketWriter {
 
       var errorString: String
       if status == EAI_SYSTEM {
-        errorString = String(validatingUTF8: strerror(errno)) ?? "Unknown error code."
+        errorString = String(validatingCString: strerror(errno)) ?? "Unknown error code."
       } else {
-        errorString = String(validatingUTF8: gai_strerror(errno)) ?? "Unknown error code."
+        errorString = String(validatingCString: gai_strerror(errno)) ?? "Unknown error code."
       }
       throw Error(code: Socket.SOCKET_ERR_GETADDRINFO_FAILED, reason: errorString)
     }
@@ -3908,7 +3908,7 @@ public class Socket: SocketReader, SocketWriter {
   ///
   private func lastError() -> String {
 
-    return String(validatingUTF8: strerror(errno)) ?? "Error: \(errno)"
+    return String(validatingCString: strerror(errno)) ?? "Error: \(errno)"
   }
 	
   ///

@@ -34,10 +34,10 @@ struct TestServer: ParsableCommand {
   func run() throws {
     print("Listening on port: \(self.port)")
     let server = try ServerOperation(port: port)
-        
+
     let opQ = OperationQueue()
     opQ.addOperation(server)
-        
+
     print("Server started.")
     opQ.waitUntilAllOperationsAreFinished()
   }

@@ -49,16 +49,16 @@ struct TestClient: ParsableCommand {
     print("Connecting to port: \(self.port)")
 
     var clientList: [ClientController] = []
-        
+
     for _ in 0..<self.numConnections {
       let client = try ClientController(port: port, maxBytes: maxBytes)
       clientList.append(client)
     }
-        
+
     while clientList.activeClients.count > 0 {
       clientList.process()
     }
-        
+
     for client in clientList {
       print("Wrote \(client.bytesWritten) bytes  Read \(client.bytesRead) bytes")
       print("\(client.state)")
@@ -67,5 +67,3 @@ struct TestClient: ParsableCommand {
 }
 
 TestClient.main()
-
-
