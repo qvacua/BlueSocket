@@ -22,35 +22,35 @@ import Foundation
 import Socket
 
 public class ServerOperation: Operation {
-    let serverHandler: ServerHandler
-    var clientHandlers: [ClientHandler]
+  let serverHandler: ServerHandler
+  var clientHandlers: [ClientHandler]
     
-    public init(port: Int) throws {
-        self.serverHandler = try ServerHandler(port: port)
-        self.clientHandlers = []
-    }
+  public init(port: Int) throws {
+    self.serverHandler = try ServerHandler(port: port)
+    self.clientHandlers = []
+  }
 
-    public override func main() {
-        self.serverHandler.onNewConnection = { socket in
-            let client = ClientHandler(socket: socket)
-            client.onClose = { [weak self, weak client] in
-                guard let self = self, let client = client else { return }
+  public override func main() {
+    self.serverHandler.onNewConnection = { socket in
+      let client = ClientHandler(socket: socket)
+      client.onClose = { [weak self, weak client] in
+        guard let self = self, let client = client else { return }
                 
-                self.clientHandlers.removeAll(where: { $0 == client })
+        self.clientHandlers.removeAll(where: { $0 == client })
 //                print("client closed  read \(client.totalReadCount) bytes  write \(client.totalWriteCount) bytes  (count: \(self.clientHandlers.count))")
-            }
-            self.clientHandlers.append(client)
-        }
-
-        while !self.isCancelled {
-            autoreleasepool {
-                let socketHandlers: [SocketHandler] = [serverHandler] + clientHandlers
-                
-                let activeHandlers = socketHandlers.wait(timeout: 12)
-                activeHandlers.process()
-            }
-        }
+      }
+      self.clientHandlers.append(client)
     }
+
+    while !self.isCancelled {
+      autoreleasepool {
+        let socketHandlers: [SocketHandler] = [serverHandler] + self.clientHandlers
+                
+        let activeHandlers = socketHandlers.wait(timeout: 12)
+        activeHandlers.process()
+      }
+    }
+  }
 }
 
 #if os(Linux)
@@ -59,6 +59,6 @@ public class ServerOperation: Operation {
 /// Autoreleasepools are not necessary for Linux: https://forums.swift.org/t/autoreleasepool-for-ubuntu/4419/14
 @discardableResult
 func autoreleasepool<Result>(invoking body: () throws -> Result) rethrows -> Result {
-    try body()
+  try body()
 }
 #endif

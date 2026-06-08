@@ -24,42 +24,45 @@ import Socket
 
 extension Array where Element == SocketHandler {
     
-    /// Wait for any socket to have activity that needs to be handled via `process()`
-    /// - Parameter timeout: Amount of time to wait; wait forever if value is not finite
-    /// - Returns: List of `SocketHandler` that need to be `process()`ed
-    func wait(timeout: TimeInterval) -> [SocketHandler] {
-        // Find handlers with pending output
-        let clientsPendingOutput = (self.filter { $0 is ClientHandler } as! [ClientHandler])
-            .filter { $0.hasPendingOutput }
+  /// Wait for any socket to have activity that needs to be handled via `process()`
+  /// - Parameter timeout: Amount of time to wait; wait forever if value is not finite
+  /// - Returns: List of `SocketHandler` that need to be `process()`ed
+  func wait(timeout: TimeInterval) -> [SocketHandler] {
+    // Find handlers with pending output
+    let clientsPendingOutput = (self.filter { $0 is ClientHandler } as! [ClientHandler])
+      .filter { $0.hasPendingOutput }
         
         
-        // Create lookup to return SocketHandlers
-        var socketList: [Socket:SocketHandler] = [:]
-        for handler in self {
-            socketList[handler.socket] = handler
-        }
-        let sockets = self.map { $0.socket }
-        
-        let activeSockets: [Socket]
-        let waitParam: (timeout: UInt, waitForever: Bool)
-        if clientsPendingOutput.count > 0 {
-            waitParam = (timeout: 10, waitForever: false)
-        } else if timeout.isFinite {
-            waitParam = (timeout: UInt(timeout*1000), waitForever: false)
-        } else {
-            waitParam = (timeout: 1000_000, waitForever: true)
-        }
-        
-        activeSockets = try! Socket.wait(for: sockets, timeout: waitParam.timeout, waitForever: waitParam.waitForever) ?? []
-        
-        let activeSocketHandlers = activeSockets.map { socketList[$0]! }
-        return activeSocketHandlers + clientsPendingOutput
+    // Create lookup to return SocketHandlers
+    var socketList: [Socket:SocketHandler] = [:]
+    for handler in self {
+      socketList[handler.socket] = handler
     }
-    
-    
-    func process() {
-        for handler in self {
-            handler.process()
-        }
+    let sockets = self.map { $0.socket }
+        
+    let activeSockets: [Socket]
+    let waitParam: (timeout: UInt, waitForever: Bool)
+    if clientsPendingOutput.count > 0 {
+      waitParam = (timeout: 10, waitForever: false)
+    } else if timeout.isFinite {
+      waitParam = (timeout: UInt(timeout*1000), waitForever: false)
+    } else {
+      waitParam = (timeout: 1000_000, waitForever: true)
     }
+        
+    activeSockets = try! Socket.wait(
+      for: sockets,
+      timeout: waitParam.timeout,
+      waitForever: waitParam.waitForever
+    ) ?? []
+        
+    let activeSocketHandlers = activeSockets.map { socketList[$0]! }
+    return activeSocketHandlers + clientsPendingOutput
+  }
+    
+  func process() {
+    for handler in self {
+      handler.process()
+    }
+  }
 }

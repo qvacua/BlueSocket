@@ -27,21 +27,21 @@ import Foundation
 ///
 public protocol SocketReader {
 	
-	///
-	/// Reads a string.
-	///
-	/// - Returns: Optional **String**
-	///
-	func readString() throws -> String?
+  ///
+  /// Reads a string.
+  ///
+  /// - Returns: Optional **String**
+  ///
+  func readString() throws -> String?
 	
-	///
-	/// Reads all available data into an Data object.
-	///
-	/// - Parameter data: **Data** object to contain read data.
-	///
-	/// - Returns: Integer representing the number of bytes read.
-	///
-	func read(into data: inout Data) throws -> Int
+  ///
+  /// Reads all available data into an Data object.
+  ///
+  /// - Parameter data: **Data** object to contain read data.
+  ///
+  /// - Returns: Integer representing the number of bytes read.
+  ///
+  func read(into data: inout Data) throws -> Int
 	
 }
 
@@ -52,26 +52,26 @@ public protocol SocketReader {
 ///
 public protocol SocketWriter {
 	
-	///
-	/// Writes data from **Data** object.
-	///
-	/// - Parameter data: **Data** object containing the data to be written.
-	///
-	@discardableResult func write(from data: Data) throws -> Int
+  ///
+  /// Writes data from **Data** object.
+  ///
+  /// - Parameter data: **Data** object containing the data to be written.
+  ///
+  @discardableResult func write(from data: Data) throws -> Int
 	
-	///
-	/// Writes data from **NSData** object.
-	///
-	/// - Parameter data: **NSData** object containing the data to be written.
-	///
-	@discardableResult func write(from data: NSData) throws -> Int
+  ///
+  /// Writes data from **NSData** object.
+  ///
+  /// - Parameter data: **NSData** object containing the data to be written.
+  ///
+  @discardableResult func write(from data: NSData) throws -> Int
 	
-	///
-	/// Writes a string
-	///
-	/// - Parameter string: **String** data to be written.
-	///
-	@discardableResult func write(from string: String) throws -> Int
+  ///
+  /// Writes a string
+  ///
+  /// - Parameter string: **String** data to be written.
+  ///
+  @discardableResult func write(from string: String) throws -> Int
 }
 
 // MARK: SSLServiceDelegate
@@ -81,73 +81,73 @@ public protocol SocketWriter {
 ///
 public protocol SSLServiceDelegate {
 	
-	///
-	/// Initialize SSL Service
-	///
-	/// - Parameter asServer:	`True` for initializing a server, otherwise a client.
-	///
-	func initialize(asServer: Bool) throws
+  ///
+  /// Initialize SSL Service
+  ///
+  /// - Parameter asServer:	`True` for initializing a server, otherwise a client.
+  ///
+  func initialize(asServer: Bool) throws
 	
-	///
-	/// Deinitialize SSL Service
-	///
-	func deinitialize()
+  ///
+  /// Deinitialize SSL Service
+  ///
+  func deinitialize()
 	
-	///
-	/// Processing on acceptance from a listening socket
-	///
-	/// - Parameter socket:	The connected Socket instance.
-	///
-	func onAccept(socket: Socket) throws
+  ///
+  /// Processing on acceptance from a listening socket
+  ///
+  /// - Parameter socket:	The connected Socket instance.
+  ///
+  func onAccept(socket: Socket) throws
 	
-	///
-	/// Processing on connection to a listening socket
-	///
-	/// - Parameter socket:	The connected Socket instance.
-	///
-	func onConnect(socket: Socket) throws
+  ///
+  /// Processing on connection to a listening socket
+  ///
+  /// - Parameter socket:	The connected Socket instance.
+  ///
+  func onConnect(socket: Socket) throws
 	
-	///
-	/// Low level writer
-	///
-	/// - Parameters:
-	///		- buffer:		Buffer pointer.
-	///		- bufSize:		Size of the buffer.
-	///
-	///	- Returns the number of bytes written. Zero indicates SSL shutdown, less than zero indicates error.
-	///
-	func send(buffer: UnsafeRawPointer, bufSize: Int) throws -> Int
+  ///
+  /// Low level writer
+  ///
+  /// - Parameters:
+  ///		- buffer:		Buffer pointer.
+  ///		- bufSize:		Size of the buffer.
+  ///
+  ///	- Returns the number of bytes written. Zero indicates SSL shutdown, less than zero indicates error.
+  ///
+  func send(buffer: UnsafeRawPointer, bufSize: Int) throws -> Int
 	
-	///
-	/// Low level reader
-	///
-	/// - Parameters:
-	///		- buffer:		Buffer pointer.
-	///		- bufSize:		Size of the buffer.
-	///
-	///	- Returns the number of bytes read. Zero indicates SSL shutdown, less than zero indicates error.
-	///
-	func recv(buffer: UnsafeMutableRawPointer, bufSize: Int) throws -> Int
+  ///
+  /// Low level reader
+  ///
+  /// - Parameters:
+  ///		- buffer:		Buffer pointer.
+  ///		- bufSize:		Size of the buffer.
+  ///
+  ///	- Returns the number of bytes read. Zero indicates SSL shutdown, less than zero indicates error.
+  ///
+  func recv(buffer: UnsafeMutableRawPointer, bufSize: Int) throws -> Int
 	
-	#if os(Linux)
+  #if os(Linux)
 
-		// MARK: ALPN
+  // MARK: ALPN
 		
-		///
-		/// Add a protocol to the list of supported ALPN protocol names. E.g. 'http/1.1' and 'h2'.
-		///
-		/// - Parameters:
-		///		- proto:		The protocol name to be added (e.g. 'h2').
-		///
-		func addSupportedAlpnProtocol(proto: String)
+  ///
+  /// Add a protocol to the list of supported ALPN protocol names. E.g. 'http/1.1' and 'h2'.
+  ///
+  /// - Parameters:
+  ///		- proto:		The protocol name to be added (e.g. 'h2').
+  ///
+  func addSupportedAlpnProtocol(proto: String)
 		
-		///
-		/// The negotiated ALPN protocol that has been agreed upon during the handshaking phase.
-		/// Will be `nil` if ALPN hasn't been used or requestsed protocol is not available.
-		///
-		var negotiatedAlpnProtocol: String? { get }
+  ///
+  /// The negotiated ALPN protocol that has been agreed upon during the handshaking phase.
+  /// Will be `nil` if ALPN hasn't been used or requestsed protocol is not available.
+  ///
+  var negotiatedAlpnProtocol: String? { get }
 		
-	#endif
+  #endif
 	
 }
 
@@ -158,45 +158,45 @@ public protocol SSLServiceDelegate {
 ///
 public enum SSLError: Swift.Error, CustomStringConvertible {
 	
-	/// Success
-	case success
+  /// Success
+  case success
 	
-	/// Retry needed
-	case retryNeeded
+  /// Retry needed
+  case retryNeeded
 	
-	/// Failure with error code and reason
-	case fail(Int, String)
+  /// Failure with error code and reason
+  case fail(Int, String)
 	
-	/// The error code itself
-	public var errCode: Int {
+  /// The error code itself
+  public var errCode: Int {
 		
-		switch self {
+    switch self {
 			
-		case .success:
-			return 0
+    case .success:
+      return 0
 			
-		case .retryNeeded:
-			return -1
+    case .retryNeeded:
+      return -1
 			
-		case .fail(let errCode, _):
-			return Int(errCode)
-		}
-	}
+    case .fail(let errCode, _):
+      return Int(errCode)
+    }
+  }
 	
-	/// Error description
-	public var description: String {
+  /// Error description
+  public var description: String {
 		
-		switch self {
+    switch self {
 			
-		case .success:
-			return "Success"
+    case .success:
+      return "Success"
 			
-		case .retryNeeded:
-			return "Retry operation"
+    case .retryNeeded:
+      return "Retry operation"
 			
-		case .fail(_, let reason):
-			return reason
-		}
-	}
+    case .fail(_, let reason):
+      return reason
+    }
+  }
 }
 

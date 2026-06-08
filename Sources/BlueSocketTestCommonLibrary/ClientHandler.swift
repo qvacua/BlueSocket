@@ -23,61 +23,61 @@ import Foundation
 import Socket
 
 public class ClientHandler: BufferedSocketHandler, ClientSocketHandler, Equatable {
-    public private(set) var socket: Socket
-    public var error: Error? = nil
+  public private(set) var socket: Socket
+  public var error: Error? = nil
     
-    var pendingOutput = Data()
-    public var totalReadCount: Int = 0
-    public var totalWriteCount: Int = 0
+  var pendingOutput = Data()
+  public var totalReadCount: Int = 0
+  public var totalWriteCount: Int = 0
 
-    var hasActivity: Bool {
-        let isActive = try! socket.isReadableOrWritable(waitForever: false, timeout: 1)
+  var hasActivity: Bool {
+    let isActive = try! self.socket.isReadableOrWritable(waitForever: false, timeout: 1)
         
-        if self.hasPendingOutput && isActive.writable {
-            return true
-        }
-        return isActive.readable
+    if self.hasPendingOutput && isActive.writable {
+      return true
     }
+    return isActive.readable
+  }
     
-    var onClose: () -> Void = { }
+  var onClose: () -> Void = { }
     
-    private var isClosed: Bool
+  private var isClosed: Bool
     
-    init(socket: Socket) {
-        self.socket = socket
-        self.isClosed = false
+  init(socket: Socket) {
+    self.socket = socket
+    self.isClosed = false
+  }
+    
+  func processInternal() throws {
+    guard let isActive = try? socket.isReadableOrWritable(waitForever: false, timeout: 1) else {
+      return
     }
-    
-    func processInternal() throws {
-        guard let isActive = try? socket.isReadableOrWritable(waitForever: false, timeout: 1) else {
-            return
-        }
-        guard !isClosed else {
-            return
-        }
-        guard !socket.remoteConnectionClosed else {
-            self.isClosed = true
-            self.onClose()
-            return
-        }
-        if isActive.writable && self.hasPendingOutput {
-            let writeCount = try socket.write(from: pendingOutput)
-            self.totalWriteCount += writeCount
-            pendingOutput.removeFirst(writeCount)
-        }
+    guard !self.isClosed else {
+      return
+    }
+    guard !self.socket.remoteConnectionClosed else {
+      self.isClosed = true
+      self.onClose()
+      return
+    }
+    if isActive.writable && self.hasPendingOutput {
+      let writeCount = try socket.write(from: self.pendingOutput)
+      self.totalWriteCount += writeCount
+      self.pendingOutput.removeFirst(writeCount)
+    }
         
-        if isActive.readable {
-            var inputData = Data()
-            try socket.read(into: &inputData)
-            self.totalReadCount += inputData.count
+    if isActive.readable {
+      var inputData = Data()
+      try socket.read(into: &inputData)
+      self.totalReadCount += inputData.count
             
-            let outputData = Common.mutateData(data: inputData)
-            self.pendingOutput.append(outputData)
-        }
+      let outputData = Common.mutateData(data: inputData)
+      self.pendingOutput.append(outputData)
     }
+  }
     
-    public static func == (lhs: ClientHandler, rhs: ClientHandler) -> Bool {
-        return lhs === rhs
-    }
+  public static func == (lhs: ClientHandler, rhs: ClientHandler) -> Bool {
+    return lhs === rhs
+  }
     
 }

@@ -23,27 +23,27 @@ import Foundation
 import Socket
 
 class ServerHandler: SocketHandler {
-    var error: Error?
+  var error: Error?
         
-    var socket: Socket
+  var socket: Socket
     
-    var hasActivity: Bool {
-        let isActive = try! socket.isReadableOrWritable(waitForever: false, timeout: 1)
-        return isActive.readable
-    }
+  var hasActivity: Bool {
+    let isActive = try! self.socket.isReadableOrWritable(waitForever: false, timeout: 1)
+    return isActive.readable
+  }
     
-    public var onNewConnection: (Socket) -> Void = { _ in }
+  public var onNewConnection: (Socket) -> Void = { _ in }
     
-    init(port: Int) throws {
-        let socket = try Socket.create(family: .inet)
-        try socket.listen(on: Int(port), node: "localhost")
-        self.socket = socket
-    }
+  init(port: Int) throws {
+    let socket = try Socket.create(family: .inet)
+    try socket.listen(on: Int(port), node: "localhost")
+    self.socket = socket
+  }
     
-    func processInternal() throws {
-        guard self.hasActivity else { return }
+  func processInternal() throws {
+    guard self.hasActivity else { return }
 
-        let clientSocket = try socket.acceptClientConnection()
-        self.onNewConnection(clientSocket)
-    }
+    let clientSocket = try socket.acceptClientConnection()
+    self.onNewConnection(clientSocket)
+  }
 }

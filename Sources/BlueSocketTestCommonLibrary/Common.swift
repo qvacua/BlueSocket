@@ -22,16 +22,16 @@ import Foundation
 
 
 struct Common {
-    // a simple mutation to ensure client is reading data properly
-    static func mutateData(data: Data) -> Data {
-        var outData = Data()
-        data.forEach { byte in
-            let newByte = UInt8( (Int(byte)+1) & 0xff )
+  // a simple mutation to ensure client is reading data properly
+  static func mutateData(data: Data) -> Data {
+    var outData = Data()
+    data.forEach { byte in
+      let newByte = UInt8( (Int(byte)+1) & 0xff )
             
-            outData.append(newByte)
-        }
-        
-        return outData
+      outData.append(newByte)
     }
+        
+    return outData
+  }
     
 }

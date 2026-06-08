@@ -21,7 +21,7 @@
 import Foundation
 
 extension Socket: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        self.uuid.hash(into: &hasher)
-    }
+  public func hash(into hasher: inout Hasher) {
+    self.uuid.hash(into: &hasher)
+  }
 }

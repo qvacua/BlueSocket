@@ -22,38 +22,38 @@ import Foundation
 import Socket
 
 protocol SocketHandler: AnyObject {
-    var error: Error? { get set }
+  var error: Error? { get set }
     
-    var socket: Socket { get }
+  var socket: Socket { get }
 
-    var hasActivity: Bool { get }
+  var hasActivity: Bool { get }
     
-    func processInternal() throws
+  func processInternal() throws
 }
 
 extension SocketHandler {
-    func process() {
-        do {
-            try processInternal()
-        } catch {
-            print("Error: \(error.localizedDescription)")
-            self.error = error
-        }
+  func process() {
+    do {
+      try processInternal()
+    } catch {
+      print("Error: \(error.localizedDescription)")
+      self.error = error
     }
+  }
 }
 
 protocol BufferedSocketHandler: SocketHandler {
-    var pendingOutput: Data { get set }
+  var pendingOutput: Data { get set }
     
 }
 
 protocol ClientSocketHandler: SocketHandler {
-    var onClose: () -> Void { get set }
+  var onClose: () -> Void { get set }
 }
 
 extension BufferedSocketHandler {
-    var hasPendingOutput: Bool {
-        return pendingOutput.count > 0
-    }
+  var hasPendingOutput: Bool {
+    return pendingOutput.count > 0
+  }
 }
 

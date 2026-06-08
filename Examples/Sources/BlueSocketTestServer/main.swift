@@ -18,26 +18,29 @@
 //     limitations under the License.
 //
 
-import Foundation
-import BlueSocketTestCommonLibrary
 import ArgumentParser
+import BlueSocketTestCommonLibrary
+import Foundation
 
 let defaultPort = 10217
 
 struct TestServer: ParsableCommand {
-    @Option(name: [.customShort("p"), .customLong("port")], help: "TCP Port to connect to (Default: \(defaultPort))")
-    var port: Int = defaultPort
+  @Option(
+    name: [.customShort("p"), .customLong("port")],
+    help: "TCP Port to connect to (Default: \(defaultPort))"
+  )
+  var port: Int = defaultPort
 
-    func run() throws {
-        print("Listening on port: \(port)")
-        let server = try ServerOperation(port: port)
+  func run() throws {
+    print("Listening on port: \(self.port)")
+    let server = try ServerOperation(port: port)
         
-        let opQ = OperationQueue()
-        opQ.addOperation(server)
+    let opQ = OperationQueue()
+    opQ.addOperation(server)
         
-        print("Server started.")
-        opQ.waitUntilAllOperationsAreFinished()
-    }
+    print("Server started.")
+    opQ.waitUntilAllOperationsAreFinished()
+  }
 }
 
 TestServer.main()

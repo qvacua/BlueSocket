@@ -23,107 +23,115 @@ import Foundation
 import Socket
 
 public class ClientController {
-    let socket: Socket
-    let maxBytes: Int
-    var error: Error?
-    let packetSize: Int
+  let socket: Socket
+  let maxBytes: Int
+  var error: Error?
+  let packetSize: Int
     
-    public var isDone: Bool {
+  public var isDone: Bool {
 //        return !socket.isConnected && !socket.remoteConnectionClosed
-        return self.state != .inProgress
+    return self.state != .inProgress
+  }
+  public var isFailed: Bool {
+    switch self.state {
+    case .inProgress: return false
+    case .success: return false
+    case .failure(_): return true
     }
-    public var isFailed: Bool {
-        switch self.state {
-        case .inProgress: return false
-        case .success: return false
-        case .failure(_): return true
-        }
-    }
+  }
 
-    public private(set) var bytesWritten: Int = 0
-    public private(set) var bytesRead: Int = 0
+  public private(set) var bytesWritten: Int = 0
+  public private(set) var bytesRead: Int = 0
     
-    public enum State: CustomStringConvertible, Equatable {
-        case inProgress
-        case success
-        case failure(String)
+  public enum State: CustomStringConvertible, Equatable {
+    case inProgress
+    case success
+    case failure(String)
         
-        public var description: String {
-            switch self {
-            case .inProgress: return "In Progress"
-            case .success: return "Success"
-            case .failure(let reason): return "Failure: \(reason)"
-            }
-        }
+    public var description: String {
+      switch self {
+      case .inProgress: return "In Progress"
+      case .success: return "Success"
+      case .failure(let reason): return "Failure: \(reason)"
+      }
     }
-    public private(set) var state: State
+  }
+  public private(set) var state: State
     
-    public init(port: Int, maxBytes: Int, packetSize: Int = 1024) throws {
-        let signature = try Socket.Signature(protocolFamily: .inet, socketType: .stream, proto: .tcp, hostname: "localhost", port: Int32(port))!
+  public init(port: Int, maxBytes: Int, packetSize: Int = 1024) throws {
+    let signature = try Socket.Signature(
+      protocolFamily: .inet,
+      socketType: .stream,
+      proto: .tcp,
+      hostname: "localhost",
+      port: Int32(port)
+    )!
         
-        self.socket = try Socket.create(connectedUsing: signature)
-        self.maxBytes = maxBytes
-        self.packetSize = packetSize
-        self.state = .inProgress
-    }
+    self.socket = try Socket.create(connectedUsing: signature)
+    self.maxBytes = maxBytes
+    self.packetSize = packetSize
+    self.state = .inProgress
+  }
     
-    public func process() {
-        do {
-            try self.processInternal()
-        } catch {
-            self.error = error
-        }
+  public func process() {
+    do {
+      try self.processInternal()
+    } catch {
+      self.error = error
     }
+  }
     
-    private func processInternal() throws {
-        guard self.state == .inProgress else {
-            return
-        }
-        if
-            bytesWritten == maxBytes &&
-            bytesRead == maxBytes
-        {
-            socket.close()
-            self.state = .success
-            return
-        }
-        guard !socket.remoteConnectionClosed else {
-            self.state = .failure("Server closed connection prematurely")
-            return
-        }
+  private func processInternal() throws {
+    guard self.state == .inProgress else {
+      return
+    }
+    if
+      self.bytesWritten == self.maxBytes &&
+      self.bytesRead == self.maxBytes
+    {
+      self.socket.close()
+      self.state = .success
+      return
+    }
+    guard !self.socket.remoteConnectionClosed else {
+      self.state = .failure("Server closed connection prematurely")
+      return
+    }
         
-        let isActive = try! socket.isReadableOrWritable(waitForever: false, timeout: 1)
+    let isActive = try! self.socket.isReadableOrWritable(waitForever: false, timeout: 1)
 
-        if
-            bytesWritten < maxBytes,
-            isActive.writable
-        {
-            let packetSize = min( maxBytes - bytesWritten, self.packetSize)
-            let outputData = generateData(offset: bytesWritten, length: packetSize)
-            let writeCount = try socket.write(from: outputData)
+    if
+      self.bytesWritten < self.maxBytes,
+      isActive.writable
+    {
+      let packetSize = min( maxBytes - self.bytesWritten, self.packetSize)
+      let outputData = self.generateData(offset: self.bytesWritten, length: packetSize)
+      let writeCount = try socket.write(from: outputData)
     
-            self.bytesWritten += writeCount
-        }
+      self.bytesWritten += writeCount
+    }
         
-        if isActive.readable {
-            var inData = Data()
-            try socket.read(into: &inData)
+    if isActive.readable {
+      var inData = Data()
+      try socket.read(into: &inData)
             
-            let compareData = Common.mutateData(data: generateData(offset: bytesRead, length: inData.count) )
-            if compareData != inData {
-                self.state = .failure("Data does not match at offset: \(bytesRead)")
-            }
-            bytesRead += inData.count
-        }
+      let compareData = Common.mutateData(
+        data: self.generateData(offset: self.bytesRead, length: inData.count)
+      )
+      if compareData != inData {
+        self.state = .failure("Data does not match at offset: \(self.bytesRead)")
+      }
+      self.bytesRead += inData.count
     }
+  }
     
-    private func generateData(offset: Int, length: Int) -> Data {
-        var data = Data()
-        for n in 0..<length {
-            let byte = UInt8( (offset + n) & 0xff )
-            data.append( byte )
-        }
-        
-        return data
+  private func generateData(offset: Int, length: Int) -> Data {
+    var data = Data()
+    for n in 0..<length {
+      let byte = UInt8( (offset + n) & 0xff )
+      data.append( byte )
     }
+        
+    return data
+  }
 }

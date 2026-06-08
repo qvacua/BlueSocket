@@ -21,16 +21,16 @@
 import Foundation
 
 public extension Array where Element == ClientController {
-    var activeClients: [ClientController] {
-        self.filter { !$0.isDone }
-    }
+  var activeClients: [ClientController] {
+    self.filter { !$0.isDone }
+  }
     
-    func process() {
-        self.forEach { $0.process() }
-    }
+  func process() {
+    self.forEach { $0.process() }
+  }
     
-    var hasFailures: Bool {
-        let failedClients = self.filter { $0.isFailed }
-        return failedClients.count > 0
-    }
+  var hasFailures: Bool {
+    let failedClients = self.filter { $0.isFailed }
+    return failedClients.count > 0
+  }
 }

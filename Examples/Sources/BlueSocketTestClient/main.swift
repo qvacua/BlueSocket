@@ -18,43 +18,52 @@
 //     limitations under the License.
 //
 
-import Foundation
 import ArgumentParser
 import BlueSocketTestCommonLibrary
+import Foundation
 
 let defaultPort = 10217
 let defaultMaxBytes = 1_000_000
 let defaultNumConnections = 1
 
 struct TestClient: ParsableCommand {
-    @Option(name: [.customShort("p"), .customLong("port")], help: "TCP Port to connect to (Default: \(defaultPort))")
-    var port: Int = defaultPort
+  @Option(
+    name: [.customShort("p"), .customLong("port")],
+    help: "TCP Port to connect to (Default: \(defaultPort))"
+  )
+  var port: Int = defaultPort
     
-    @Option(name: [.customShort("b"), .customLong("bytes")], help: "Number of bytes to send (Default: \(defaultMaxBytes))")
-    var maxBytes: Int = defaultMaxBytes
+  @Option(
+    name: [.customShort("b"), .customLong("bytes")],
+    help: "Number of bytes to send (Default: \(defaultMaxBytes))"
+  )
+  var maxBytes: Int = defaultMaxBytes
 
-    @Option(name: [.customShort("c"), .customLong("connections")], help: "Number of simultaneous connections (Default: \(defaultNumConnections))")
-    var numConnections: Int = defaultNumConnections
+  @Option(
+    name: [.customShort("c"), .customLong("connections")],
+    help: "Number of simultaneous connections (Default: \(defaultNumConnections))"
+  )
+  var numConnections: Int = defaultNumConnections
 
-    func run() throws {
-        print("Connecting to port: \(port)")
+  func run() throws {
+    print("Connecting to port: \(self.port)")
 
-        var clientList: [ClientController] = []
+    var clientList: [ClientController] = []
         
-        for _ in 0..<numConnections {
-            let client = try ClientController(port: port, maxBytes: maxBytes)
-            clientList.append(client)
-        }
-        
-        while clientList.activeClients.count > 0 {
-            clientList.process()
-        }
-        
-        for client in clientList {
-            print("Wrote \(client.bytesWritten) bytes  Read \(client.bytesRead) bytes")
-            print("\(client.state)")
-        }
+    for _ in 0..<self.numConnections {
+      let client = try ClientController(port: port, maxBytes: maxBytes)
+      clientList.append(client)
     }
+        
+    while clientList.activeClients.count > 0 {
+      clientList.process()
+    }
+        
+    for client in clientList {
+      print("Wrote \(client.bytesWritten) bytes  Read \(client.bytesRead) bytes")
+      print("\(client.state)")
+    }
+  }
 }
 
 TestClient.main()

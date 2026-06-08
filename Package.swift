@@ -20,30 +20,32 @@ import PackageDescription
 
 #if os(Linux) || os(macOS) || os(iOS) || os(tvOS)
 let package = Package(
-    name: "Socket",
-    products: [
-        .library(
-            name: "Socket",
-            targets: ["Socket"]),
-        .library(
-            name: "BlueSocketTestCommonLibrary",
-            targets: ["BlueSocketTestCommonLibrary"]),
-    ],
-    dependencies: [],
-    targets: [
-        .target(
-            name: "Socket",
-            dependencies: [],
-        ),
-        .testTarget(
-            name: "SocketTests",
-            dependencies: ["Socket", "BlueSocketTestCommonLibrary"]
-        ),
-        .target(
-            name: "BlueSocketTestCommonLibrary",
-            dependencies: [ "Socket" ]
-        ),
-    ]
+  name: "Socket",
+  products: [
+    .library(
+      name: "Socket",
+      targets: ["Socket"]
+    ),
+    .library(
+      name: "BlueSocketTestCommonLibrary",
+      targets: ["BlueSocketTestCommonLibrary"]
+    ),
+  ],
+  dependencies: [],
+  targets: [
+    .target(
+      name: "Socket",
+      dependencies: []
+    ),
+    .testTarget(
+      name: "SocketTests",
+      dependencies: ["Socket", "BlueSocketTestCommonLibrary"]
+    ),
+    .target(
+      name: "BlueSocketTestCommonLibrary",
+      dependencies: [ "Socket" ]
+    ),
+  ]
 )
 #else
 fatalError("Unsupported OS")

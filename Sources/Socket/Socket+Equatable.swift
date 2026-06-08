@@ -21,9 +21,7 @@
 import Foundation
 
 extension Socket: Equatable {
-    
-    public static func == (lhs: Socket, rhs: Socket) -> Bool {
-        return lhs === rhs
-    }
-    
+  public static func == (lhs: Socket, rhs: Socket) -> Bool {
+    return lhs === rhs
+  }
 }
