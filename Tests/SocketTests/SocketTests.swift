@@ -37,7 +37,15 @@ class SocketTests: XCTestCase {
   let port: Int32 = 1337
   let host: String = "127.0.0.1"
   let path: String = "/tmp/server.test.socket"
-	
+
+  func sleep(_ duration: UInt32) {
+    #if os(Linux)
+    _ = Glibc.sleep(duration)
+    #else
+    _ = Darwin.sleep(duration)
+    #endif
+  }
+
   func createHelper(family: Socket.ProtocolFamily = .inet) throws -> Socket {
 		
     let socket = try Socket.create(family: family)
@@ -544,12 +552,8 @@ class SocketTests: XCTestCase {
       }
 			
       // Give the thread time to start...
-      #if os(Linux)
-      _ = Glibc.sleep(1)
-      #else
-      _ = Darwin.sleep(1)
-      #endif
-			
+      self.sleep(1)
+
       XCTAssertTrue(socket.isListening)
       XCTAssertEqual(socket.listeningPort, self.port)
 			
@@ -607,12 +611,8 @@ class SocketTests: XCTestCase {
       }
 			
       // Give the thread time to start...
-      #if os(Linux)
-      _ = Glibc.sleep(1)
-      #else
-      _ = Darwin.sleep(1)
-      #endif
-			
+      self.sleep(1)
+
       XCTAssertTrue(socket.isListening)
       XCTAssertGreaterThan(socket.listeningPort, 0)
       print("Listening port: \(socket.listeningPort)")
@@ -1128,12 +1128,8 @@ class SocketTests: XCTestCase {
       self.launchServerHelper()
 			
       // Need to wait for the server to come up...
-      #if os(Linux)
-      _ = Glibc.sleep(2)
-      #else
-      _ = Darwin.sleep(2)
-      #endif
-			
+      self.sleep(2)
+
       // Create the signature...
       let signature = try Socket.Signature(
         protocolFamily: .inet,
@@ -1180,12 +1176,7 @@ class SocketTests: XCTestCase {
       print("Sent quit to server...")
 			
       // Need to wait for the server to go down before continuing...
-      #if os(Linux)
-      _ = Glibc.sleep(1)
-      #else
-      _ = Darwin.sleep(1)
-      #endif
-			
+      self.sleep(1)
     } catch let error {
 			
       // See if it's a socket error or something else...
@@ -1213,11 +1204,7 @@ class SocketTests: XCTestCase {
       self.launchServerHelper()
 
       // Need to wait for the server to come up...
-      #if os(Linux)
-      _ = Glibc.sleep(2)
-      #else
-      _ = Darwin.sleep(2)
-      #endif
+      self.sleep(2)
 
       // Create the signature...
       let signature = try Socket.Signature(
@@ -1278,11 +1265,7 @@ class SocketTests: XCTestCase {
       print("Sent quit to server...")
 
       // Need to wait for the server to go down before continuing...
-      #if os(Linux)
-      _ = Glibc.sleep(1)
-      #else
-      _ = Darwin.sleep(1)
-      #endif
+      self.sleep(1)
 
     } catch let error {
 
@@ -1308,11 +1291,7 @@ class SocketTests: XCTestCase {
       self.launchUDPHelper()
 
       // Need to wait for the helper to come up...
-      #if os(Linux)
-      _ = Glibc.sleep(2)
-      #else
-      _ = Darwin.sleep(2)
-      #endif
+      self.sleep(2)
 
       let socket = try self.createUDPHelper()
 
@@ -1362,11 +1341,7 @@ class SocketTests: XCTestCase {
       try socket.write(from: Data("QUIT".utf8), to: addr!)
 
       // Need to wait for the server to go down before continuing...
-      #if os(Linux)
-      _ = Glibc.sleep(1)
-      #else
-      _ = Darwin.sleep(1)
-      #endif
+      self.sleep(1)
 
     } catch let error {
       // See if it's a socket error or something else...
@@ -1390,12 +1365,8 @@ class SocketTests: XCTestCase {
       self.launchServerHelper(family: .unix)
 			
       // Need to wait for the server to come up...
-      #if os(Linux)
-      _ = Glibc.sleep(2)
-      #else
-      _ = Darwin.sleep(2)
-      #endif
-			
+      self.sleep(2)
+
       // Create the signature...
       let signature = try Socket.Signature(socketType: .stream, proto: .unix, path: self.path)!
 			
@@ -1436,12 +1407,8 @@ class SocketTests: XCTestCase {
       print("Sent quit to server...")
 			
       // Need to wait for the server to go down before continuing...
-      #if os(Linux)
-      _ = Glibc.sleep(1)
-      #else
-      _ = Darwin.sleep(1)
-      #endif
-			
+      self.sleep(1)
+
     } catch let error {
 			
       // See if it's a socket error or something else...
