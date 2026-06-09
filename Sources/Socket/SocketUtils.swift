@@ -180,11 +180,7 @@ extension fd_set {
   /// Zero the fd_set
   ///
   public mutating func zero() {
-    #if swift(>=4.1)
     self.withCArrayAccess { $0.initialize(repeating: 0, count: __fd_set_count) }
-    #else
-    self.withCArrayAccess { $0.initialize(to: 0, count: __fd_set_count) }
-    #endif
   }
 	
   ///
