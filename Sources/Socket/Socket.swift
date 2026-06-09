@@ -949,17 +949,10 @@ public class Socket: SocketReader, SocketWriter {
 
       if self.readBufferSize != oldValue {
 
-        #if swift(>=4.1)
         self.readBuffer.deinitialize(count: self.readBufferSize)
         self.readBuffer.deallocate()
         self.readBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: self.readBufferSize)
         self.readBuffer.initialize(to: 0)
-        #else
-        self.readBuffer.deinitialize()
-        self.readBuffer.deallocate(capacity: oldValue)
-        self.readBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: self.readBufferSize)
-        self.readBuffer.initialize(to: 0, count: self.readBufferSize)
-        #endif
       }
     }
   }
@@ -1393,11 +1386,7 @@ public class Socket: SocketReader, SocketWriter {
   private init(family: ProtocolFamily, type: SocketType, proto: SocketProtocol) throws {
 
     // Initialize the read buffer...
-    #if swift(>=4.1)
     self.readBuffer.initialize(to: 0)
-    #else
-    self.readBuffer.initialize(to: 0, count: self.readBufferSize)
-    #endif
 
     // If the family is .unix, set the protocol to .unix as well...
     var sockProto = proto
@@ -1443,11 +1432,7 @@ public class Socket: SocketReader, SocketWriter {
 
     self.isConnected = true
     self.isListening = false
-    #if swift(>=4.1)
     self.readBuffer.initialize(to: 0)
-    #else
-    self.readBuffer.initialize(to: 0, count: self.readBufferSize)
-    #endif
 
     self.socketfd = fd
 
@@ -1496,13 +1481,8 @@ public class Socket: SocketReader, SocketWriter {
     }
 
     // Destroy and free the readBuffer...
-    #if swift(>=4.1)
     self.readBuffer.deinitialize(count: readBufferSize)
     self.readBuffer.deallocate()
-    #else
-    self.readBuffer.deinitialize()
-    self.readBuffer.deallocate(capacity: self.readBufferSize)
-    #endif
   }
 
   // MARK: Public Functions
@@ -2135,11 +2115,7 @@ public class Socket: SocketReader, SocketWriter {
     // Now, do the connection using the supplied address...
     let (addrPtr, addrLen) = try signature.unixAddress()
     defer {
-      #if swift(>=4.1)
       addrPtr.deallocate()
-      #else
-      addrPtr.deallocate(capacity: addrLen)
-      #endif
     }
 
     let rc = addrPtr.withMemoryRebound(to: sockaddr.self, capacity: 1) {
@@ -2569,11 +2545,7 @@ public class Socket: SocketReader, SocketWriter {
     // Now, do the connection using the supplied address from the signature...
     let (addrPtr, addrLen) = try signature.unixAddress()
     defer {
-      #if swift(>=4.1)
       addrPtr.deallocate()
-      #else
-      addrPtr.deallocate(capacity: addrLen)
-      #endif
     }
 
     let rc = addrPtr.withMemoryRebound(to: sockaddr.self, capacity: 1) {
@@ -3672,11 +3644,7 @@ public class Socket: SocketReader, SocketWriter {
   private func readDataIntoStorage() throws -> Int {
 
     // Initialize the buffer...
-    #if swift(>=4.1)
     self.readBuffer.initialize(to: 0x0)
-    #else
-    self.readBuffer.initialize(to: 0x0, count: self.readBufferSize)
-    #endif
 
     var recvFlags: Int32 = 0
     if self.readStorage.count > 0 {
@@ -3789,11 +3757,7 @@ public class Socket: SocketReader, SocketWriter {
   private func readDatagramIntoStorage() throws -> (bytesRead: Int, fromAddress: Address?) {
 
     // Initialize the buffer...
-    #if swift(>=4.1)
     self.readBuffer.initialize(to: 0x0)
-    #else
-    self.readBuffer.initialize(to: 0x0, count: self.readBufferSize)
-    #endif
     var recvFlags: Int32 = 0
     if self.readStorage.count > 0 {
       recvFlags |= Int32(MSG_DONTWAIT)
