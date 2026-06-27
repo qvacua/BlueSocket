@@ -1324,17 +1324,33 @@ public class Socket: SocketReader, SocketWriter {
   /// Creates an Address for a given host and port.
   ///
   ///	- Parameters:
-  /// 	- hostname:			Hostname for this signature.
+  /// 	- host:				Hostname for this signature.
   /// 	- port:				Port for this signature.
+  /// 	- family:			Optional protocol family to constrain address resolution to.
+  ///						Pass `.inet` to resolve IPv4 only, `.inet6` for IPv6 only, or
+  ///						`nil` (the default) to accept either. Passing `.unix` always
+  ///						returns `nil`, since Unix domain sockets are not resolvable
+  ///						via `getaddrinfo`.
   ///
-  /// - Returns: An Address instance, or `nil` if the hostname and port are not valid.
+  /// - Returns: An Address instance, or `nil` on resolution failure or family is `.unix`. 
   ///
-  public class func createAddress(for host: String, on port: Int32) -> Address? {
+  public class func createAddress(for host: String, on port: Int32, family: ProtocolFamily? = nil) -> Address? {
+    var hints = addrinfo()
+    switch family {
+    case .inet:
+      hints.ai_family = AF_INET
+    case .inet6:
+      hints.ai_family = AF_INET6
+    case .unix:
+      return nil
+    case nil:
+      break
+    }
 
     var info: UnsafeMutablePointer<addrinfo>?
 
     // Retrieve the info on our target...
-    let status: Int32 = getaddrinfo(host, String(port), nil, &info)
+    let status: Int32 = getaddrinfo(host, String(port), &hints, &info)
     if status != 0 {
 
       return nil
@@ -1342,7 +1358,6 @@ public class Socket: SocketReader, SocketWriter {
 
     // Defer cleanup of our target info...
     defer {
-
       if info != nil {
         freeaddrinfo(info)
       }

@@ -697,16 +697,16 @@ struct SocketTests {
     #expect(!socket.isActive)
   }
 
-  @Test func testSetWriteTimeout() throws {
+  @Test func testSetWriteTimeoutInet() throws {
 
     // Create the socket...
-    let socket = try createUDPHelper()
+    let socket = try createUDPHelper(family: .inet)
 
     // Set a timeout of 300 ms...
     try socket.setWriteTimeout(value: UInt(300))
 
     // Try a write to a `bogus` address...
-    let addr = Socket.createAddress(for: "foobar.org", on: 2142)
+    let addr = Socket.createAddress(for: "foobar.org", on: 2142, family: .inet)
     #expect(addr != nil)
 
     // It should be noted that this write should succeed...
@@ -717,6 +717,33 @@ struct SocketTests {
     // Close the socket...
     socket.close()
     #expect(!socket.isActive)
+  }
+
+  @Test func testSetWriteTimeoutInet6() throws {
+
+    // Create the socket...
+    let socket = try createUDPHelper(family: .inet6)
+
+    // Set a timeout of 300 ms...
+    try socket.setWriteTimeout(value: UInt(300))
+
+    // Try a write to a `bogus` address...
+    let addr = Socket.createAddress(for: "foobar.org", on: 2142, family: .inet6)
+    #expect(addr != nil)
+
+    // It should be noted that this write should succeed...
+    //	If this was a TCP socket, the results would be different...
+    let bytesWritten = try socket.write(from: Data("Hello from UDP".utf8), to: addr!)
+    #expect(bytesWritten == 14)
+
+    // Close the socket...
+    socket.close()
+    #expect(!socket.isActive)
+  }
+  
+  @Test func testCreateAddressUnix() {
+    let addr = Socket.createAddress(for: "foobar.org", on: 1234, family: .unix)
+    #expect(addr == nil)
   }
 
   @Test func testIsReadableWritableFail() throws {
